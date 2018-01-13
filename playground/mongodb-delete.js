@@ -43,14 +43,14 @@ MongoClient.connect(url, (err, client) => {
   // });
 
   // deleteOne Todo
-  const collection = db.collection('Users');
-  collection.findOneAndDelete({
-    _id: new ObjectID('5a5a37aac1b8760b284b64e9')
-  }).then((results) => {
-    console.log(JSON.stringify(results, undefined, 2));
-  }, (err) => {
-    console.log('Unable to delete user', err)
-  });
+  // const collection = db.collection('Users');
+  // collection.findOneAndDelete({
+  //   _id: new ObjectID('5a5a37aac1b8760b284b64e9')
+  // }).then((results) => {
+  //   console.log(JSON.stringify(results, undefined, 2));
+  // }, (err) => {
+  //   console.log('Unable to delete user', err)
+  // });
 
   // client.close();
 });
