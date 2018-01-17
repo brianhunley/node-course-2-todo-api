@@ -15,6 +15,7 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
+// POST /todos - add a new todo
 app.post('/todos', (req, res) => {
   const todo = new Todo({
     text: req.body.text
@@ -27,6 +28,7 @@ app.post('/todos', (req, res) => {
   });
 });
 
+// GET /todos - get all todos
 app.get('/todos', (req, res) => {
   Todo.find().then((todos) => {
     res.send({todos});
@@ -35,7 +37,7 @@ app.get('/todos', (req, res) => {
   });
 });
 
-// GET /todos/123412341234
+// GET /todos/123412341234 - get a todo by id
 app.get('/todos/:id', (req, res) => {
   const id = req.params.id;
 
@@ -60,7 +62,7 @@ app.get('/todos/:id', (req, res) => {
   });
 });
 
-// DELETE /todos/123123123
+// DELETE /todos/123123123 - delete a todo by id
   // remove todo by id
   //   success
   //     if no doc, send 404
@@ -89,7 +91,7 @@ app.delete('/todos/:id', (req, res) => {
   });
 });
 
-// PATCH HTTP method to do document updates
+// PATCH HTTP method to do document updates - update a todo by id
 app.patch('/todos/:id', (req, res) => {
   const id = req.params.id;
   const body = _.pick(req.body, ['text', 'completed']);
@@ -121,6 +123,29 @@ app.patch('/todos/:id', (req, res) => {
   });  
 });
 
+// POST /users - add a new user
+//    most similar to the POST /todos function
+//    use "pick" for getting the parameters off the body
+//      just email and password are the only two fields posted
+app.post('/users', (req, res) => {
+  const body = _.pick(req.body, ['email', 'password']);  
+  const user = new User(body);
+  // use above line instead of this.  the body object is already created!
+  // const user = new User({
+  //   email: body.email,
+  //   password: body.password
+  // });
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  }).catch((err) => {
+    res.status(400).send(err);
+  }); 
+});
+
+// start web server listening on specified port
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
