@@ -17,9 +17,10 @@ const port = process.env.PORT;
 app.use(bodyParser.json());
 
 // POST /todos - add a new todo
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   const todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id
   });
 
   todo.save().then((doc) => {
@@ -30,8 +31,10 @@ app.post('/todos', (req, res) => {
 });
 
 // GET /todos - get all todos
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((todos) => {
     res.send({todos});
   }, (err) => {
     res.status(400).send(err);
@@ -39,7 +42,7 @@ app.get('/todos', (req, res) => {
 });
 
 // GET /todos/123412341234 - get a todo by id
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   const id = req.params.id;
 
   // check if todo has a validate id using isValid
@@ -49,7 +52,10 @@ app.get('/todos/:id', (req, res) => {
   }
 
   // findById
-  Todo.findById(id).then((todo) => {
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     // check if a todo was found
     if (!todo) {
       // if a todo was not found, send a 404 with an empty body
@@ -69,7 +75,7 @@ app.get('/todos/:id', (req, res) => {
   //     if no doc, send 404
   //     if doc, send doc back with a 200
   //   error - send 400 with an empty body
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   // get the id
   const id = req.params.id;
 
@@ -79,7 +85,10 @@ app.delete('/todos/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     // check if no todo was return, showing it was removed
     if (!todo) {
       return res.status(404).send();
@@ -93,7 +102,7 @@ app.delete('/todos/:id', (req, res) => {
 });
 
 // PATCH HTTP method to do document updates - update a todo by id
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   const id = req.params.id;
   const body = _.pick(req.body, ['text', 'completed']);
 
@@ -110,7 +119,10 @@ app.patch('/todos/:id', (req, res) => {
     body.completedAt = null;
   } 
 
-  Todo.findByIdAndUpdate(id, { $set: body }, { new: true }
+  Todo.findOneAndUpdate({
+    _id: id,
+    _creator: req.user._id
+  }, { $set: body }, { new: true }
   ).then((todo) => {
     // check if no todo was return, showing it was removed
     if (!todo) {
