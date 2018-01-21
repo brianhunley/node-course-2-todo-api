@@ -129,7 +129,7 @@ app.patch('/todos/:id', (req, res) => {
 //    use "pick" for getting the parameters off the body
 //      just email and password are the only two fields posted
 app.post('/users', (req, res) => {
-  const body = _.pick(req.body, ['email', 'password']);  
+  const body = _.pick(req.body, ['email', 'password']);
   const user = new User(body);
   // use above line instead of this.  the body object is already created!
   // const user = new User({
@@ -148,7 +148,20 @@ app.post('/users', (req, res) => {
 
 app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
-})
+});
+
+// POST /users/login {email, password}
+app.post('/users/login', (req, res) => {
+  const body = _.pick(req.body, ['email', 'password']);
+  
+  User.findByCredentials(body.email, body.password).then((user) => {    
+    return user.generateAuthToken().then((token) => {
+      res.header('x-auth', token).send(user);
+    });
+  }).catch((err) => {
+    res.status(400).send();
+  });
+});
 
 // start web server listening on specified port
 app.listen(port, () => {
