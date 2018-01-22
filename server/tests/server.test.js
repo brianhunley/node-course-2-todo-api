@@ -125,7 +125,7 @@ describe('DELETE /todos/:id', () => {
         // query database using findById - is should fail, since it was deleted
         // use the toNotExist assurtion
         Todo.findById(testId).then((todo) => {
-          expect(todo).toBeNull();
+          expect(todo).toBeFalsy();
           done();
         }).catch((err) => done(err));
       });
@@ -194,7 +194,7 @@ describe('PATCH /todos/:id', () => {
       .expect((res) => {
         expect(res.body.todo.text).toBe(newText);
         expect(res.body.todo.completed).toBe(true);
-        // expect(res.body.todo.completedAt).toBeA('number');
+        expect(typeof res.body.todo.completedAt).toBe('number');
       })
       .end(done);
   });
@@ -237,7 +237,7 @@ describe('PATCH /todos/:id', () => {
       .expect((res) => {
         expect(res.body.todo.text).toBe(newText);
         expect(res.body.todo.completed).toBe(false);
-        expect(res.body.todo.completedAt).toBeNull();
+        expect(res.body.todo.completedAt).toBeFalsy();
       })
       .end(done);
   });
@@ -353,8 +353,10 @@ describe('POST /users/login', () => {
       }
 
       User.findById(users[1]._id).then((user) => {
-        // expect(user).toHaveProperty('access', 'auth');
-        // expect(user.tokens[1]).toHaveProperty('token', res.headers['x-auth']);
+        expect(user.toObject().tokens[1]).toMatchObject({
+          access: 'auth',
+          token: res.headers['x-auth']
+        });
         done();
       }).catch((err) => done(err));
     });
@@ -369,7 +371,7 @@ describe('POST /users/login', () => {
     })
     .expect(400)
     .expect((res) => {
-      expect(res.headers['x-auth']).toBe(undefined);
+      expect(res.headers['x-auth']).toBeFalsy();
     })
     .end((err, res) => {
       if (err) {
